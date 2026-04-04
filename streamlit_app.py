@@ -103,18 +103,9 @@ if api_key:
                 pdf.set_font("Arial", 'I', 9)
                 pdf.cell(60, 5, "Authorized Signature", align='C')
 
-                # Final Save and Download
-                pdf_output = pdf.output(dest='S').encode('latin-1', 'ignore')
-                st.download_button(
-                    label="🚀 Generate Professional Debit Note", 
-                    data=pdf_output, 
-                    file_name="FHI_Debit_Note.pdf", 
-                    mime="application/pdf"
-                )
-                
                 # Final Save and Download (Fixed Version)
                 try:
-                    # We use 'output()' directly for the data
+                    # In fpdf2, .output() returns the bytes we need directly
                     pdf_data_output = pdf.output()
                     
                     st.download_button(
