@@ -112,11 +112,21 @@ if api_key:
                     mime="application/pdf"
                 )
                 
-                # Save the PDF
-                pdf_output = pdf.output(dest='S').encode('latin-1')
-                st.download_button(label="Click here to save PDF", data=pdf_output, file_name="Debit_Note.pdf", mime="application/pdf")
+                # Final Save and Download (Fixed Version)
+                try:
+                    # We use 'output()' directly for the data
+                    pdf_data_output = pdf.output()
+                    
+                    st.download_button(
+                        label="🚀 Generate Professional Debit Note", 
+                        data=pdf_data_output, 
+                        file_name="FHI_Debit_Note.pdf", 
+                        mime="application/pdf"
+                    )
+                except Exception as pdf_err:
+                    st.error(f"PDF Download Error: {pdf_err}")
 
         except Exception as e:
             st.error(f"Something went wrong: {e}")
 else:
-    st.warning("Please enter your Gemini API Key in the sidebar to start.")
+    st.warning("Please enter your Gemini API Key in the sidebar.")
