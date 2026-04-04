@@ -12,18 +12,28 @@ if api_key:
     uploaded_file = st.file_uploader("Upload Policy/Quotation (PDF)", type="pdf")
 
     if uploaded_file:
-        st.info("Reading document...")
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        
-        # This prompt tells the AI exactly what you need
-        prompt = "Extract from this insurance document: Insured Name, Class, Period, Location, and Premium. Format as a list."
-        
-        # Logic to send file to AI
-        content = [{"mime_type": "application/pdf", "data": uploaded_file.getvalue()}, prompt]
-        response = model.generate_content(content)
-        
-        st.subheader("Extracted Details")
-        st.write(response.text)
+st.info("Reading document...")
+        try:
+            # 1. Setup the model
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            
+            # 2. Prepare the file and the question
+            pdf_data = {'mime_type': 'application/pdf', 'data': uploaded_file.getvalue()}
+            prompt = "Extract these 5 fields from the document: Insured Name, Insurance Class, Policy Period, Location, and Premium. Return them as a clear list."
+            
+            # 3. Ask the AI
+            response = model.generate_content([prompt, pdf_data])
+            
+            # 4. Show the results
+            st.subheader("Extracted Details")
+            st.write(response.text)
+            
+            # Save the text for the PDF generator
+            st.session_state['extracted_text'] = response.text
+
+        except Exception as e:
+            st.error(f"Something went wrong: {e}")
+            st.info("Tip: Double-check that your Gemini API Key is pasted correctly in the sidebar.")
         
         if st.button("Download Debit Note PDF"):
             pdf = FPDF()
