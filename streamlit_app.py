@@ -17,7 +17,7 @@ if api_key:
         # Everything below is pushed to the right.
         st.info("Reading document...")
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash-latest')
+            model = genai.GenerativeModel('gemini-pro')
             pdf_data = {'mime_type': 'application/pdf', 'data': uploaded_file.getvalue()}
             prompt = "Extract: Insured Name, Insurance Class, Policy Period, Location, and Premium. Format as a simple list."
             
