@@ -66,7 +66,7 @@ if api_key:
                 pdf.set_x(110)
                 pdf.cell(90, 5, "87-105 Chatham Road, Tsim Sha Tsui, Kowloon.", ln=True, align='R')
                 pdf.set_x(110)
-                pdf.cell(90, 5, "Email: info@fhi.com.hk | Tel: +852 5622 2792", ln=True, align='R')
+                pdf.cell(90, 5, "Email: info@fhi.com.hk | Tel: +852 2735 0086", ln=True, align='R')
                 pdf.ln(18)
                 
                 # Title
