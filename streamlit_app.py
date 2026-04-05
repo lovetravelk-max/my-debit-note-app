@@ -74,18 +74,25 @@ if api_key:
                 pdf.cell(0, 15, "DEBIT NOTE", ln=True, align='C')
                 pdf.ln(3)
 
-                # Policy Details Box
+               # --- CORRECTED POLICY DETAILS BOX ---
                 pdf.set_font("Arial", 'B', 12)
                 pdf.set_fill_color(240, 240, 240)
                 pdf.cell(0, 8, "  POLICY DETAILS", ln=True, fill=True)
                 pdf.set_font("Arial", '', 10)
                 
+                pdf.ln(2) # Small gap after header
+                
                 for line in editable_details.split('\n'):
                     if line.strip():
+                        # Clean the text for PDF encoding
                         pdf_line = line.strip().encode('latin-1', 'replace').decode('latin-1')
-                        pdf.multi_cell(0, 6, f"  {pdf_line}") 
+                        
+                        # FIX: We set the width to 180mm to give it plenty of room to wrap
+                        # This prevents the "Not enough horizontal space" error
+                        pdf.set_x(15) # Slight indent for neatness
+                        pdf.multi_cell(180, 6, pdf_line, align='L') 
                 
-                pdf.ln(10) 
+                pdf.ln(8)
 
                 # Payment Options (Reverted Font/Spacing)
                 pdf.set_font("Arial", 'B', 11)
