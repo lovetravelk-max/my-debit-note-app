@@ -165,8 +165,90 @@ if api_key:
                 mime="application/pdf"
             )
 
-        except Exception as pdf_err:
-            st.error(f"PDF Generation/Download Error: {pdf_err}")
+       # --- PDF GENERATION PHASE ---
+        if st.button("🚀 Generate Final Debit Note"):
+            try:
+                pdf = FPDF()
+                pdf.add_page()
+                
+                # 1. LOGO: BIGGER (95mm)
+                try:
+                    pdf.image("logo.png", 10, 8, 95) 
+                except:
+                    pdf.set_font("Arial", 'B', 16)
+                    pdf.cell(0, 10, "FU HOI INSURANCE MANAGEMENT LIMITED", ln=True)
 
+                # 2. Company Header (Top Right)
+                pdf.set_font("Arial", '', 9)
+                pdf.set_xy(110, 10)
+                pdf.cell(90, 5, "Room 1229, 12/F., Beverley Commercial Centre,", ln=True, align='R')
+                pdf.set_x(110)
+                pdf.cell(90, 5, "87-105 Chatham Road, Tsim Sha Tsui, Kowloon.", ln=True, align='R')
+                pdf.set_x(110)
+                pdf.cell(90, 5, "Email: info@fhi.com.hk | Tel: +852 5622 2792", ln=True, align='R')
+                pdf.ln(18)
+                
+                # 3. Title
+                pdf.set_font("Arial", 'B', 22)
+                pdf.cell(0, 15, "DEBIT NOTE", ln=True, align='C')
+                pdf.ln(3)
+
+                # 4. Policy Data Box
+                pdf.set_font("Arial", 'B', 12)
+                pdf.set_fill_color(240, 240, 240)
+                pdf.cell(0, 8, "  POLICY DETAILS", ln=True, fill=True)
+                pdf.set_font("Arial", '', 10)
+                
+                for line in editable_details.split('\n'):
+                    if line.strip():
+                        pdf_line = line.strip().encode('latin-1', 'replace').decode('latin-1')
+                        pdf.multi_cell(0, 6, f"  {pdf_line}") 
+                
+                pdf.ln(12) 
+
+                # 5. Payment Methods
+                pdf.set_font("Arial", 'B', 11)
+                pdf.set_text_color(0, 51, 102)
+                pdf.cell(0, 8, "PREMIUM ARRANGEMENT OPTIONS:", ln=True)
+                pdf.set_text_color(0, 0, 0)
+                
+                pdf.set_font("Arial", 'B', 9)
+                pdf.cell(0, 5, "1) CHEQUE", ln=True)
+                pdf.set_font("Arial", '', 9)
+                pdf.multi_cell(0, 5, "Payable to: FU HOI INSURANCE MANAGEMENT LIMITED\nMail to: Room 1229, 12/F., Beverley Commercial Centre, 87-105 Chatham Road, Tsim Sha Tsui.")
+                pdf.ln(2)
+
+                pdf.set_font("Arial", 'B', 9)
+                pdf.cell(0, 5, "2) INTERNET BANKING (OCBC Wing Hang Bank - 035)", ln=True)
+                pdf.set_font("Arial", '', 9)
+                pdf.multi_cell(0, 5, "A/C Name: FU HOI INSURANCE MANAGEMENT LIMITED\nA/C No: 802 - 155874 - 831\n*Please email remittance slip to info@fhi.com.hk")
+                pdf.ln(2)
+
+                pdf.set_font("Arial", 'B', 9)
+                pdf.cell(0, 5, "3) FPS", ln=True)
+                pdf.set_font("Arial", '', 9)
+                pdf.cell(0, 5, "Mobile Number: +852 5622 2792", ln=True)
+                
+                # 6. Chop (Smaller 30mm) and Signature
+                try:
+                    pdf.image("chop.png", 155, 235, 30) 
+                except:
+                    pass
+                
+                pdf.set_xy(10, 260)
+                pdf.set_font("Arial", 'B', 10)
+                pdf.cell(0, 5, f"Billing Date: {display_billing_date}", ln=False)
+
+                pdf.set_xy(140, 270)
+                pdf.set_font("Arial", 'I', 9)
+                pdf.cell(60, 5, "Authorized Signature", align='C')
+
+                # Filename and Download
+                final_filename = f"{policy_no} {formatted_billing_date} DN.pdf"
+                pdf_bytes = bytes(pdf.output())
+                st.download_button(label=f"💾 Download: {final_filename}", data=pdf_bytes, file_name=final_filename, mime="application/pdf")
+
+            except Exception as e:
+                st.error(f"Error: {e}")
 else:
     st.warning("Please enter your API Key in the sidebar.")
