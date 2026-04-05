@@ -14,7 +14,7 @@ if api_key:
     if uploaded_file:
         st.info("AI is analyzing the document...")
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             pdf_data = {'mime_type': 'application/pdf', 'data': uploaded_file.getvalue()}
             
             # Added "Insurer Name" to the extraction
