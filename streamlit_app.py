@@ -13,6 +13,7 @@ if api_key:
     uploaded_file = st.file_uploader("Upload Policy/Quotation (PDF)", type="pdf")
 
     if uploaded_file:
+        # Billing Date Input
         billing_date = st.date_input("Billing Date", datetime.now())
         formatted_billing_date = billing_date.strftime("%d%m%Y")
         display_billing_date = billing_date.strftime("%d/%m/%Y")
@@ -22,20 +23,18 @@ if api_key:
             model = genai.GenerativeModel('gemini-2.5-flash')
             pdf_data = {'mime_type': 'application/pdf', 'data': uploaded_file.getvalue()}
             
-            # Refined prompt to remove intro text and extract clean data
-            prompt = """Extract these fields: Insured Name, Insurer Name, Policy/Quotation No, 
+            prompt = """Extract: Insured Name, Insurer Name, Policy/Quotation No, 
             Insurance Class, Policy Period, Location, and Premium. 
-            Provide ONLY the list. Do not include any introductory sentences like 'Here is the extracted information'."""
+            Provide ONLY the list. Do not include any intro sentences."""
             
             response = model.generate_content([prompt, pdf_data])
             
             # --- PREVIEW & EDIT SECTION ---
             st.subheader("Preview & Edit Details")
-            # Automatically strip unwanted markers and intro phrases
             clean_text = response.text.replace("**", "").replace("Here is the extracted information:", "").strip()
             editable_details = st.text_area("Edit details below:", value=clean_text, height=220)
             
-            # Logic for Dynamic Filename
+            # Filename Logic
             policy_no = "DEBIT_NOTE"
             for line in editable_details.split('\n'):
                 if any(x in line for x in ["No", "Policy", "Quotation"]):
@@ -47,17 +46,17 @@ if api_key:
                 pdf = FPDF()
                 pdf.add_page()
                 
-                # 1. LARGE Logo (Increased to 75mm)
+                # 1. Logo (Large - 75mm)
                 try:
                     pdf.image("logo.png", 10, 8, 75) 
                 except:
                     pdf.set_font("Arial", 'B', 14)
                     pdf.cell(0, 10, "FU HOI INSURANCE MANAGEMENT LIMITED", ln=True)
 
-                # 2. Company Header & Billing Date (Same Line)
+                # 2. Company Header (Top Right)
                 pdf.set_font("Arial", '', 9)
-                pdf.set_xy(100, 8) # Position for address
-                pdf.cell(100, 5, f"Room 1229, 12/F., Beverley Commercial Centre,   Date: {display_billing_date}", ln=True, align='R')
+                pdf.set_xy(100, 8)
+                pdf.cell(100, 5, "Room 1229, 12/F., Beverley Commercial Centre,", ln=True, align='R')
                 pdf.set_x(100)
                 pdf.cell(100, 5, "87-105 Chatham Road, Tsim Sha Tsui, Kowloon.", ln=True, align='R')
                 pdf.set_x(100)
@@ -70,7 +69,7 @@ if api_key:
                 pdf.cell(0, 15, "DEBIT NOTE", ln=True, align='C')
                 pdf.ln(2)
 
-                # 4. Data Box
+                # 4. Policy Data Box
                 pdf.set_font("Arial", 'B', 11)
                 pdf.set_fill_color(240, 240, 240)
                 pdf.cell(0, 8, "  POLICY DETAILS", ln=True, fill=True)
@@ -82,29 +81,43 @@ if api_key:
                         pdf_line = line.strip().encode('latin-1', 'replace').decode('latin-1')
                         pdf.cell(0, 7, f"  {pdf_line}", ln=True)
                 
-                # ADD SPACE BEFORE PAYMENT OPTIONS
+                # Spacing before payment options
                 pdf.ln(12) 
 
-                # 5. Payment Methods
+                # 5. Payment Methods (REVERTED TO PREVIOUS FONT/SPACE VERSION)
                 pdf.set_font("Arial", 'B', 11)
-                pdf.set_text_color(0, 51, 102)
+                pdf.set_text_color(0, 51, 102) # Dark Blue for Payment Section
                 pdf.cell(0, 8, "PREMIUM ARRANGEMENT OPTIONS:", ln=True)
-                pdf.set_text_color(0, 0, 0)
+                pdf.set_text_color(0, 0, 0) # Back to Black
                 
-                pdf.set_font("Arial", '', 10)
-                pdf.cell(0, 6, "1) CHEQUE: Payable to FU HOI INSURANCE MANAGEMENT LIMITED", ln=True)
-                pdf.set_font("Arial", 'I', 9)
-                pdf.multi_cell(0, 5, "   Mail to: Room 1229, 12/F., Beverley Commercial Centre, 87-105 Chatham Road, Tsim Sha Tsui.")
+                pdf.set_font("Arial", '', 9)
+                # Option 1: Cheque
+                pdf.set_font("Arial", 'B', 9)
+                pdf.cell(0, 5, "1) CHEQUE", ln=True)
+                pdf.set_font("Arial", '', 9)
+                pdf.multi_cell(0, 5, "Payable to: FU HOI INSURANCE MANAGEMENT LIMITED\nMail to: Room 1229, 12/F., Beverley Commercial Centre, 87-105 Chatham Road, Tsim Sha Tsui.")
                 pdf.ln(2)
 
-                pdf.set_font("Arial", '', 10)
-                pdf.cell(0, 6, "2) INTERNET BANKING: OCBC Wing Hang Bank (035) A/C: 802-155874-831", ln=True)
-                pdf.cell(0, 6, "   Account Name: FU HOI INSURANCE MANAGEMENT LIMITED", ln=True)
+                # Option 2: Internet Banking
+                pdf.set_font("Arial", 'B', 9)
+                pdf.cell(0, 5, "2) INTERNET BANKING (OCBC Wing Hang Bank - 035)", ln=True)
+                pdf.set_font("Arial", '', 9)
+                pdf.multi_cell(0, 5, "A/C Name: FU HOI INSURANCE MANAGEMENT LIMITED\nA/C No: 802 - 155874 - 831\n*Please email remittance slip to info@fhi.com.hk")
                 pdf.ln(2)
 
-                pdf.cell(0, 6, "3) FPS: Mobile Number +852 5622 2792", ln=True)
+                # Option 3: FPS
+                pdf.set_font("Arial", 'B', 9)
+                pdf.cell(0, 5, "3) FPS", ln=True)
+                pdf.set_font("Arial", '', 9)
+                pdf.cell(0, 5, "Mobile Number: +852 5622 2792", ln=True)
                 
-                # 6. Signature & Chop Placement (Ensuring 1-page fit)
+                # 6. Billing Date & Signature/Chop (Bottom Area)
+                # Position Billing Date at the bottom left
+                pdf.set_xy(10, 260)
+                pdf.set_font("Arial", 'B', 10)
+                pdf.cell(0, 5, f"Billing Date: {display_billing_date}", ln=False)
+                
+                # Chop and Signature on the right
                 try:
                     pdf.image("chop.png", 145, 225, 45) 
                 except:
@@ -114,9 +127,8 @@ if api_key:
                 pdf.set_font("Arial", 'I', 9)
                 pdf.cell(60, 5, "Authorized Signature", align='C')
 
-                # Dynamic Filename
+                # Filename and Download
                 final_filename = f"{policy_no} {formatted_billing_date} DN.pdf"
-                
                 pdf_output = bytes(pdf.output())
                 st.download_button(
                     label=f"💾 Download: {final_filename}", 
